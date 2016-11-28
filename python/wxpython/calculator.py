@@ -79,11 +79,10 @@ class CalcWindow(wx.Frame):
             self.gridsizer.AddMany([(bt, 0, wx.EXPAND)])
 
     def event_init(self):
-        # 键盘事件不区分大小写，全部按大写来
-        #self.Bind(wx.EVT_KEY_DOWN, self.keyboard_down)
-        #self.Bind(wx.EVT_KEY_UP, self.keyboard_down)
-        # 键盘事件区分大小写
-        self.Bind(wx.EVT_CHAR, self.keyboard_down)
+        # self.Bind(wx.EVT_KEY_DOWN, self.keyboard_down) # 键盘事件不区分大小写，全部按大写来
+        # self.Bind(wx.EVT_KEY_UP, self.keyboard_down) # 键盘事件不区分大小写，全部按大写来
+
+        self.Bind(wx.EVT_CHAR, self.keyboard_down) # 键盘事件区分大小写
 
     def button_event(self, event):
         self.input_event(self.FindWindowById(event.GetId()).GetLabel())
@@ -136,8 +135,7 @@ class CalcWindow(wx.Frame):
                 self.display.SetValue(self.display.GetValue() + ' ' + self.list[i])
             self.list = []
 
-
 if __name__ == '__main__':
     app = wx.App()
-    CalcWindow(None, title = 'calculator')
+    CalcWindow(None, title = unicode('计算器', 'utf-8'))
     app.MainLoop()

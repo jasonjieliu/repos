@@ -9,13 +9,13 @@ from calculator import *
 from draw_pictrue import *
 
 
-class Choose(wx.Frame):
+class ChooseWindow(wx.Frame):
     def __init__(self, parent, title):
-        super(Choose, self).__init__(parent = parent,
+        super(ChooseWindow, self).__init__(parent = parent,
                                      title = title,
                                      size = (350, 250),
                                      style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
-                                     name = 'choose window')
+                                     name = os.path.basename(sys.argv[0]).split('.')[0])
 
         self.font_init()
         self.window_init()
@@ -56,16 +56,13 @@ class Choose(wx.Frame):
 
     def window_init(self):
         self.vbox = wx.BoxSizer(wx.VERTICAL)
-        box_choose = wx.BoxSizer(wx.VERTICAL)
 
         self.panel_init()
 
         self.gridsizer_init()
 
-        box_choose.Add(self.gridsizer, flag = wx.EXPAND, proportion = 1)
-
         self.vbox.Add((-1, 10))
-        self.vbox.Add(box_choose,
+        self.vbox.Add(self.gridsizer,
                       flag = wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM,
                       border = 5,
                       proportion = 1)
@@ -76,18 +73,20 @@ class Choose(wx.Frame):
 
     def panel_init(self):
         self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour(random.choice(['Green', 'Yellow', 'Grey', 'Red', 'White', 'Black']))
-        self.panel.SetBackgroundColour((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        self.panel.SetBackgroundColour(random.choice(
+            ['Green', 'Yellow', 'Grey', 'Red', 'White', 'Black']))
+        self.panel.SetBackgroundColour(
+            (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
         self.panel.Refresh()
 
     def gridsizer_init(self):
         self.button = [
-            ('form', self.button_event, FormWindow),
-            ('list.txt', self.button_event, ListWindow),
-            ('calculator', self.button_event, CalcWindow),
-            ('draw_pictrue', self.button_event, DrawWindow),
-            ('unuse', self.button_event, None),
-            ('unuse', self.button_event, None)
+            (unicode('表格', 'utf-8'), self.button_event, FormWindow),
+            (unicode('列表', 'utf-8'), self.button_event, ListWindow),
+            (unicode('计算器', 'utf-8'), self.button_event, CalcWindow),
+            (unicode('画图', 'utf-8'), self.button_event, DrawWindow),
+            (unicode('暂未使用', 'utf-8'), self.button_event, None),
+            (unicode('暂未使用', 'utf-8'), self.button_event, None)
         ]
 
         self.gridsizer = wx.GridSizer(2, 3, 5, 5)
@@ -119,9 +118,7 @@ class Choose(wx.Frame):
         self.Bind(wx.EVT_MOVE, self.mouse_move)
         # 鼠标坐标
         self.Bind(wx.EVT_MOTION, self.mouse_move)
-        # 窗口变大/小或者最大化时会产生EVT_PAINT事件
         self.Bind(wx.EVT_PAINT, self.repaint)
-        # 窗口退出时会产生EVT_CLOSE事件
         self.Bind(wx.EVT_CLOSE, self.window_close)
 
     def button_event(self, event):
@@ -137,6 +134,7 @@ class Choose(wx.Frame):
                 if each_bt[0] == lable_name and each_bt[2]:
                     each_bt[2](None, lable_name)
                     #self.Destroy()
+
         elif event.EventType == wx.EVT_ENTER_WINDOW.typeId:
             self.status_bar.SetStatusText('enter', 0)
             self.FindWindowById(event.GetId()).SetBackgroundColour('green')
@@ -176,7 +174,9 @@ class Choose(wx.Frame):
         wx.ICON_QUESTION   : show a question icon
         '''
 
-        dlg = wx.MessageDialog(self, "Are you Sure to Quit?", "Question",
+        dlg = wx.MessageDialog(self,
+                               unicode('确定退出？', 'utf-8'),
+                               unicode('选择', 'utf-8'),
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
 
         if dlg.ShowModal() == wx.ID_YES:
@@ -186,5 +186,5 @@ class Choose(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App()
-    Choose(None, title = 'choose')
+    ChooseWindow(None, title = unicode('选择', 'utf-8'))
     app.MainLoop()

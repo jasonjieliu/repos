@@ -28,7 +28,7 @@ class FormWindow(wx.Frame):
         super(FormWindow, self).__init__(parent = parent,
                                          title = title,
                                          size = (350, 250),
-                                         style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
+                                         style = wx.MINIMIZE_BOX | wx.CAPTION | wx.CLOSE_BOX,
                                          name = os.path.basename(sys.argv[0]).split('.')[0])
 
         self.window_init()
@@ -74,7 +74,7 @@ class FormWindow(wx.Frame):
             self.grid.SetRowSize(row, 20)  # 设置行高度
             self.grid.SetRowLabelValue(row, unicode('第%d行', 'utf-8') % (row))
             for col in range(4):
-                self.grid.SetColSize(col, 80)  # 设置列宽度
+                self.grid.SetColSize(col, 50)  # 设置列宽度
                 self.grid.SetColLabelValue(col, unicode('第%d列', 'utf-8') % (col))
                 self.grid.SetCellValue(row, col, grid_data[row][col])
                 self.grid.SetReadOnly(row, col)
@@ -85,23 +85,25 @@ class FormWindow(wx.Frame):
                 # print self.grid.GetCellValue(row, col)
                 # print self.grid.GetRowLabelValue(row)
 
+        self.grid.AppendCols(1)  # 末尾新增一列
+        self.grid.HideRowLabels() # 隐藏行标签
+        # self.grid.HideColLabels()
+        # self.grid.SetDefaultCellOverflow(False)
+
         '''
         0:默认选中一格
         1:默认选中一行
         2:默认选中一列
         '''
-        self.grid.SetSelectionMode(0)
+        self.grid.SetSelectionMode(1)
 
-        self.grid.HideCol(0)
-
-        self.grid.SelectRow(1) # 初始化选中第一行
-        print self.grid.GetSelectedRows() # 获取当前选中行
-        self.grid.SelectCol(1) # 初始化选中第一列
         self.grid.ClearSelection() # 清除选中
 
-        self.grid.AppendRows(1)  # 末尾新增一行
+        self.grid.SelectRow(0) # 初始化选中第一行
+
+        # self.grid.AppendRows(1)  # 末尾新增一行
         self.grid.AppendCols(1)  # 末尾新增一列
-        self.grid.InsertRows(2, 1)  # 第二行后新增一行
+        # self.grid.InsertRows(2, 1)  # 第二行后新增一行
 
         self.box_form.Add(self.grid, flag = wx.EXPAND, proportion = 1)
 
@@ -162,9 +164,11 @@ class FormWindow(wx.Frame):
         event.Skip()
 
     def event_info(self, event, msg):
-        print event.GetRow(), event.GetCol(), self.grid.GetNumberRows(), self.grid.GetNumberCols()
+        print msg, self.grid.GetNumberRows(), self.grid.GetNumberCols()
+        print event.GetRow(), event.GetCol(), self.grid.GetCellValue(event.GetRow(), event.GetCol())
         print self.grid.GetSelectedCells(), self.grid.GetSelectedRows(), self.grid.GetSelectedCols()
-        #print self.grid.GetCellValue(event.GetRow(), event.GetCol()), msg
+
+        #print self.grid.GetCell
 
         # event.AltDown()
         # event.ControlDown()

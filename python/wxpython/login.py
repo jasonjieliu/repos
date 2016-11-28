@@ -6,9 +6,9 @@ import os
 import sys
 from choose import *
 
-class Login(wx.Frame):
+class LoginWindow(wx.Frame):
     def __init__(self, parent, title):
-        super(Login, self).__init__(parent = parent,
+        super(LoginWindow, self).__init__(parent = parent,
                                     title = title,
                                     size = (280, 200),
                                     style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
@@ -23,7 +23,7 @@ class Login(wx.Frame):
         self.panel = wx.Panel(self)
 
         self.font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
-        self.font.SetPointSize(50)
+        self.font.SetPointSize(20)
 
         '''
         wx.VERTICAL  : 垂直方向
@@ -76,7 +76,7 @@ class Login(wx.Frame):
         self.text_user.SetValue('username')
 
         self.bt_ok = wx.Button(self.panel, label = unicode('登陆', 'utf-8'), size = (70, 30))
-        self.bt_exit = wx.Button(self.panel, label = unicode('退出', 'utf-8'), size = (70, 30))
+        self.bt_exit = wx.Button(self.panel, label = unicode('取消', 'utf-8'), size = (70, 30))
 
         box3.Add(self.bt_ok, flag = wx.LEFT | wx.RIGHT, border = 30)
         box3.Add(self.bt_exit, flag = wx.LEFT | wx.RIGHT, border = 30)
@@ -122,41 +122,41 @@ class Login(wx.Frame):
         EVT_BUTTON               : 按钮被点击。
         EVT_MENU                 : 菜单被选中。
         '''
-        self.Bind(wx.EVT_PAINT, self.repaint)
-        self.normal.Bind(wx.EVT_RADIOBUTTON, self.select)
-        self.anonymity.Bind(wx.EVT_RADIOBUTTON, self.select)
-        self.bt_ok.Bind(wx.EVT_BUTTON, self.login)
-        self.bt_exit.Bind(wx.EVT_BUTTON, self.exit)
+        self.Bind(wx.EVT_PAINT, self.repaint_event)
+        self.bt_ok.Bind(wx.EVT_BUTTON, self.login_event)
+        self.bt_exit.Bind(wx.EVT_BUTTON, self.exit_event)
+        self.normal.Bind(wx.EVT_RADIOBUTTON, self.choice_event)
+        self.anonymity.Bind(wx.EVT_RADIOBUTTON, self.choice_event)
 
-    def repaint(self, event):
+    def repaint_event(self, event):
         self.Refresh()
 
-    def select(self, event):
+    def choice_event(self, event):
         pass
 
-    def login(self, event):
-        if self.login_check(self.text_user.GetValue(), self.text_passwd.GetValue()) or self.anonymity.GetValue():
-            self.exit(event)
-            Choose(None, unicode('应用选择', 'utf-8'))
+    def login_event(self, event):
+        if self.user_check(self.text_user.GetValue(), self.text_passwd.GetValue()) or self.anonymity.GetValue():
+            self.exit_event(event)
+            ChooseWindow(None, unicode('应用选择', 'utf-8'))
         else:
 
             dlg = wx.MessageDialog(self,
-                                   'login fail! unvalid username or password!',
-                                   'login',
+                                   unicode('用户名或者密码有误', 'utf-8'),
+                                   unicode('登陆', 'utf-8'),
                                    wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
 
-    def login_check(self, username, password):
+    def user_check(self, username, password):
         if username == 'root' and password == '111111':
             return True
         else:
             return False
 
-    def exit(self, event):
+    def exit_event(self, event):
         self.Destroy()
 
 if __name__ == '__main__':
     app = wx.App()
-    Login(None, title = 'login')
+    LoginWindow(None, title = unicode('登陆', 'utf-8'))
     app.MainLoop()
