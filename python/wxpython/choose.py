@@ -7,6 +7,7 @@ from grid_create import *
 from list import *
 from calculator import *
 from draw_pictrue import *
+from prize import *
 
 
 class ChooseWindow(wx.Frame):
@@ -86,7 +87,7 @@ class ChooseWindow(wx.Frame):
             (unicode('列表', 'utf-8'), self.button_event, ListWindow),
             (unicode('计算器', 'utf-8'), self.button_event, CalcWindow),
             (unicode('画图', 'utf-8'), self.button_event, DrawWindow),
-            (unicode('暂未使用', 'utf-8'), self.button_event, None)
+            (unicode('抽奖', 'utf-8'), self.button_event, PrizeWindow)
         ]
 
         self.gridsizer = wx.GridSizer(2, 3, 5, 5)

@@ -8,12 +8,12 @@ import time
 import random
 import wx.grid
 
-class GiftWindow(wx.Frame):
+class PrizeWindow(wx.Frame):
     def __init__(self, parent, title):
-        super(GiftWindow, self).__init__(parent = parent,
+        super(PrizeWindow, self).__init__(parent = parent,
                                          title = title,
-                                         size = (450, 450),
-                                         style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
+                                         size = (500, 450),
+                                         #style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
                                          name = os.path.basename(sys.argv[0]).split('.')[0])
 
         self.window_init()
@@ -32,6 +32,7 @@ class GiftWindow(wx.Frame):
         self.image = None
         self.file_name = None
         self.sava_flag = True
+        self.draw_repeat_flag = True
         self.prize_num = [str(x+1) for x in range(15)]
         self.prize_level = [unicode('特等奖', 'utf-8'),
                             unicode('一等奖', 'utf-8'),
@@ -60,6 +61,12 @@ class GiftWindow(wx.Frame):
                  unicode('退出', 'utf-8'),
                  wx.ITEM_NORMAL,
                  self.quit_event))),
+            (unicode('&设置', 'utf-8'), (
+                (unicode('&重复中奖', 'utf-8'),
+                 unicode('是否可以重复中奖', 'utf-8'),
+                 wx.ITEM_CHECK,
+                 self.draw_rule_event),
+            )),
             (unicode('&视图', 'utf-8'), (
                 (unicode('&状态栏', 'utf-8'),
                  unicode('状态栏', 'utf-8'),
@@ -125,42 +132,43 @@ class GiftWindow(wx.Frame):
 
         box1 = wx.BoxSizer(wx.HORIZONTAL)
         box2 = wx.BoxSizer(wx.HORIZONTAL)
-        box3 = wx.BoxSizer(wx.VERTICAL)
 
         text_level = wx.StaticText(self, wx.NewId(), unicode('奖等级别:', 'utf-8'))
         self.ch_level = wx.Choice(self, wx.NewId(), choices = self.prize_level)
         self.ch_level.SetSelection(len(self.prize_level) - 1)
         self.cur_prize_level = self.prize_level[-1]
 
-        box1.Add(text_level, flag = wx.LEFT, border = 10)
-        box1.Add(self.ch_level, flag = wx.LEFT, border = 5)
+        box1.Add(text_level, flag = wx.LEFT | wx.ALIGN_CENTER, border = 10)
+        box1.Add(self.ch_level, flag = wx.LEFT | wx.ALIGN_CENTER, border = 5)
 
         text_num = wx.StaticText(self, wx.NewId(), unicode('中奖人数:', 'utf-8'))
         self.ch_num = wx.Choice(self, wx.NewId(), choices = self.prize_num)
         self.ch_num.SetSelection(len(self.prize_num) - 1)
         self.cur_prize_num = self.prize_num[-1]
 
-        box2.Add(text_num, flag = wx.LEFT, border = 10)
-        box2.Add(self.ch_num, flag = wx.LEFT, border = 5)
-
-        box3.Add((-1, 10))
-        box3.Add(box1, flag = wx.BOTTOM, border = 5)
-        box3.Add(box2, flag = wx.BOTTOM, border = 5)
+        box2.Add(text_num, flag = wx.LEFT | wx.ALIGN_CENTER, border = 10)
+        box2.Add(self.ch_num, flag = wx.LEFT | wx.ALIGN_CENTER, border = 5)
 
         self.bt_start = wx.Button(self, wx.NewId(), label = unicode('开始', 'utf-8'))
         self.bt_stop = wx.Button(self, wx.NewId(), label = unicode('停止', 'utf-8'))
 
-        self.button_vbox.Add(box3,
-                             flag = wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER,
-                             border = 10)
+        self.button_vbox.Add(box1,
+                             flag = wx.LEFT | wx.EXPAND | wx.ALIGN_CENTER,
+                             proportion = 1,
+                             border = 5)
+        self.button_vbox.Add(box2,
+                             flag = wx.LEFT | wx.EXPAND | wx.ALIGN_CENTER,
+                             proportion = 1,
+                             border = 5)
+
         self.button_vbox.Add(self.bt_start,
-                             flag = wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER,
+                             flag = wx.LEFT | wx.SHAPED | wx.ALIGN_CENTER,
                              proportion = 1,
-                             border = 10)
+                             border = 5)
         self.button_vbox.Add(self.bt_stop,
-                             flag = wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER,
+                             flag = wx.LEFT | wx.RIGHT | wx.SHAPED | wx.ALIGN_CENTER,
                              proportion = 1,
-                             border = 10)
+                             border = 5)
 
     def panel_init(self):
         self.panel_vbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -170,21 +178,23 @@ class GiftWindow(wx.Frame):
         self.grid.SetLabelBackgroundColour('White')
         self.grid.SetCellHighlightColour('Blue')
         self.grid.SetGridLineColour('Red')
-
+        self.grid.SetRowLabelSize(50)
         self.grid.SetColSize(0, 100)
+
         self.grid.SetColLabelValue(0, unicode('中奖人员', 'utf-8'))
         self.grid_clean()
 
         self.panel = wx.Panel(self, -1)
 
         self.panel_vbox.Add(self.grid,
-                            flag = wx.BOTTOM | wx.ALIGN_CENTER,
-                            proportion = 1,
+                            flag = wx.LEFT | wx.RIGHT | wx.TOP,
+                            proportion = 0,
                             border = 10)
         self.panel_vbox.Add(self.panel,
-                            flag = wx.LEFT | wx.RIGHT | wx.TOP | wx.EXPAND | wx.ALIGN_CENTER,
-                            proportion = 2,
-                            border = 30)
+                            flag = wx.LEFT | wx.RIGHT | wx.TOP | wx.SHAPED | wx.ALIGN_CENTER,
+                            proportion = 1,
+                            border = 10)
+
 
     def grid_clean(self):
         for row in range(len(self.prize_num)):
@@ -192,8 +202,6 @@ class GiftWindow(wx.Frame):
             self.grid.SetCellValue(row, 0, '')
             self.grid.SetCellTextColour(row, 0, 'Red')
             self.grid.SetCellBackgroundColour(row, 0, 'Green')
-            self.grid.SetCellAlignment(row, 0, 5, 5)
-
 
     def status_bar_init(self):
         self.status_bar = self.CreateStatusBar()
@@ -210,15 +218,25 @@ class GiftWindow(wx.Frame):
         self.bt_stop.Bind(wx.EVT_BUTTON, self.stop_event)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_event)
         self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.grid_event)
-        self.Bind(wx.EVT_MOTION, self.move_event)
-        self.Bind(wx.EVT_MOVE, self.move_event)
-        self.Bind(wx.EVT_CLOSE, self.window_close)
+        self.Bind(wx.EVT_SIZE, self.window_size_event)
+        self.Bind(wx.EVT_ICONIZE, self.window_size_event) # 最小化事件
+        self.Bind(wx.EVT_MAXIMIZE, self.window_size_event) # 最大化事件
+        self.Bind(wx.EVT_PAINT, self.window_paint_event)
+        self.Bind(wx.EVT_CLOSE, self.window_close_event) # 关闭事件
 
         self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.timer_event, self.timer)
+        self.Bind(wx.EVT_TIMER, self.timer_event, self.timer) # 定时器事件
+
+        for child in self.GetChildren():
+            for widget in child.GetChildren():
+                widget.Bind(wx.EVT_MOVE, self.move_event) # 窗口移动事件
+                widget.Bind(wx.EVT_MOTION, self.move_event) # 鼠标移动事件
+            child.Bind(wx.EVT_MOVE, self.move_event)
+            child.Bind(wx.EVT_MOTION, self.move_event)
+        self.Bind(wx.EVT_MOVE, self.move_event)
 
     def open_event(self, event):
-        file_wildcard = "gift files(*.txt)|*.txt|All files(*.*)|*.*"
+        file_wildcard = "employee file(*.txt)|*.txt|All files(*.*)|*.*"
         dlg = wx.FileDialog(self,
                             unicode('打开文件', 'utf-8'),
                             os.getcwd(),
@@ -232,7 +250,7 @@ class GiftWindow(wx.Frame):
         dlg.Destroy()
 
     def save_as_event(self, event):
-        file_wildcard = "gift files(*.txt)|*.txt|All files(*.*)|*.*"
+        file_wildcard = "prize file(*.txt)|*.txt|All files(*.*)|*.*"
         dlg = wx.FileDialog(self,
                             unicode('保存文件', 'utf-8'),
                             os.getcwd(),
@@ -261,6 +279,12 @@ class GiftWindow(wx.Frame):
     def quit_event(self, event):
         self.save_as_event(event)
         self.Destroy()
+
+    def draw_rule_event(self, event):
+        if self.FindItemInMenuBar(event.GetId()).IsChecked():
+            self.draw_repeat_flag = True
+        else:
+            self.draw_repeat_flag = False
 
     def status_show_hide_event(self, event):
         if self.FindItemInMenuBar(event.GetId()).IsChecked():
@@ -299,30 +323,23 @@ class GiftWindow(wx.Frame):
         self.cur_prize_num = event.GetString()
 
     def start_event(self, event):
-        if not self.file_name:
-            self.soft_warn(unicode('人员文件尚未装载', 'utf-8'))
-            return
-
-        if len(self.people) < int(self.cur_prize_num):
-            self.soft_warn(unicode('当前总人数小于奖项个数', 'utf-8'))
+        if not self.draw_check():
             return
 
         self.grid_clean()
         self.grid.SetColLabelValue(0, self.cur_prize_level)
 
-        self.timer.Start(10)
+        self.timer.Start(100)
 
     def timer_event(self, event):
         for i in range(int(self.cur_prize_num)):
-            self.grid.SetCellValue(i, 0, random.choice(self.people.keys()))
+            id = random.choice(self.people.keys())
+            self.grid.SetCellValue(i, 0, id)
+            if i == 0:
+                self.image_show(id)
 
     def stop_event(self, event):
-        if not self.file_name:
-            self.soft_warn(unicode('人员文件尚未装载', 'utf-8'))
-            return
-
-        if len(self.people) < int(self.cur_prize_num):
-            self.soft_warn(unicode('当前总人数小于奖项个数', 'utf-8'))
+        if not self.draw_check():
             return
 
         self.timer.Stop()
@@ -331,16 +348,28 @@ class GiftWindow(wx.Frame):
 
         for i in range(int(self.cur_prize_num)):
             job_num = random.choice(self.people.keys())
-            self.people.pop(job_num)
+            if not self.draw_repeat_flag:
+                self.people.pop(job_num)
             self.grid.SetCellValue(i, 0, job_num)
             self.prize_people[self.cur_prize_level].append(job_num)
 
         self.sava_flag = False
 
+    def draw_check(self):
+        if not self.file_name:
+            self.soft_warn(unicode('抽奖人员名单尚未装载', 'utf-8'))
+            return False
+
+        if len(self.people) < int(self.cur_prize_num):
+            self.soft_warn(unicode('当前参与抽奖人数小于奖项个数', 'utf-8'))
+            return False
+
+        return True
+
     def soft_warn(self, message):
         dlg = wx.MessageDialog(self,
                                message,
-                               "Question",
+                               unicode('提示', 'utf-8'),
                                wx.OK | wx.YES_DEFAULT | wx.ICON_QUESTION)
 
         dlg.ShowModal()
@@ -404,14 +433,26 @@ class GiftWindow(wx.Frame):
 
         event.Skip()
 
-    def window_close(self, event):
+    def window_size_event(self, event):
+        # print wx.EVT_SIZE.typeId, wx.EVT_ICONIZE.typeId, wx.EVT_MAXIMIZE.typeId
+        # print event.EventType, self.grid.GetSize()
+        self.grid.Refresh()
+
+        event.Skip()
+
+    def window_paint_event(self, event):
+        self.Refresh()
+
+        event.Skip()
+
+    def window_close_event(self, event):
         if self.sava_flag:
             self.Destroy()
             return
 
         dlg = wx.MessageDialog(self,
-                               unicode('中奖名单未保存, 确认退出?', 'utf-8'),
-                               "Question",
+                               unicode('中奖人员名单尚未保存, 确认退出?', 'utf-8'),
+                               unicode('提示', 'utf-8'),
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
 
         if dlg.ShowModal() == wx.ID_YES:
@@ -421,5 +462,5 @@ class GiftWindow(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App()
-    gift = GiftWindow(None, title = unicode('盒子支付年会抽奖', 'utf-8'))
+    PrizeWindow(None, title = unicode('盒子支付年会抽奖', 'utf-8'))
     app.MainLoop()
