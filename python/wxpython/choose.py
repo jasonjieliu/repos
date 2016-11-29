@@ -3,7 +3,7 @@
 
 import wx
 import random
-from form import *
+from grid_create import *
 from list import *
 from calculator import *
 from draw_pictrue import *
@@ -67,7 +67,7 @@ class ChooseWindow(wx.Frame):
                       border = 5,
                       proportion = 1)
 
-        self.SetSizer(self.vbox)
+        self.panel.SetSizer(self.vbox)
 
         self.status_bar_init()
 
@@ -81,18 +81,18 @@ class ChooseWindow(wx.Frame):
 
     def gridsizer_init(self):
         self.button = [
-            (unicode('表格', 'utf-8'), self.button_event, FormWindow),
+            (unicode('表格(create)', 'utf-8'), self.button_event, GridWindow),
+            (unicode('表格(table)', 'utf-8'), self.button_event, GridWindow),
             (unicode('列表', 'utf-8'), self.button_event, ListWindow),
             (unicode('计算器', 'utf-8'), self.button_event, CalcWindow),
             (unicode('画图', 'utf-8'), self.button_event, DrawWindow),
-            (unicode('暂未使用', 'utf-8'), self.button_event, None),
             (unicode('暂未使用', 'utf-8'), self.button_event, None)
         ]
 
         self.gridsizer = wx.GridSizer(2, 3, 5, 5)
 
         for each_bt in self.button:
-            bt = wx.Button(self, wx.NewId(), label = each_bt[0], size = (30, 30))
+            bt = wx.Button(self.panel, wx.NewId(), label = each_bt[0], size = (30, 30))
             bt.SetFont(self.font)
             bt.Bind(wx.EVT_BUTTON, each_bt[1])
             bt.Bind(wx.EVT_ENTER_WINDOW, each_bt[1])
@@ -101,7 +101,6 @@ class ChooseWindow(wx.Frame):
             bt.Bind(wx.EVT_LEFT_DOWN, each_bt[1])
             bt.Bind(wx.EVT_RIGHT_UP, each_bt[1])
             bt.Bind(wx.EVT_RIGHT_DOWN, each_bt[1])
-            bt.Bind(wx.EVT_MOTION, self.mouse_move)
             self.gridsizer.AddMany([(bt, 0, wx.EXPAND)])
 
     def status_bar_init(self):
@@ -114,12 +113,16 @@ class ChooseWindow(wx.Frame):
         self.status_bar.SetStatusText(unicode('窗口位置: 0,0', 'utf-8'), 2)
 
     def event_init(self):
-        # 窗口坐标
-        self.Bind(wx.EVT_MOVE, self.mouse_move)
-        # 鼠标坐标
-        self.Bind(wx.EVT_MOTION, self.mouse_move)
         self.Bind(wx.EVT_PAINT, self.repaint)
         self.Bind(wx.EVT_CLOSE, self.window_close)
+
+        for child in self.GetChildren():
+            for widget in child.GetChildren():
+                widget.Bind(wx.EVT_MOVE, self.mouse_move) # 窗口坐标
+                widget.Bind(wx.EVT_MOTION, self.mouse_move) # 鼠标坐标
+            child.Bind(wx.EVT_MOVE, self.mouse_move)
+            child.Bind(wx.EVT_MOTION, self.mouse_move)
+        self.Bind(wx.EVT_MOVE, self.mouse_move)
 
     def button_event(self, event):
         '''

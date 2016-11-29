@@ -50,7 +50,6 @@ class Calculator(wx.Frame):
         self.vbox.Add(self.grid, flag = wx.EXPAND, proportion = 1)
         self.SetSizer(self.vbox)
 
-
 if __name__ == '__main__':
     app = wx.App()
     Calculator(None, title = 'GridSizer')

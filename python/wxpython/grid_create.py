@@ -7,7 +7,7 @@ import sys
 import wx.grid
 
 
-class FormWindow(wx.Frame):
+class GridWindow(wx.Frame):
     def __init__(self, parent, title):
         '''
         wx.DEFAULT_FRAME_STYLE   : 这是每个窗口的缺省风格，包含标题、可调节大小的边框，最大最小化按钮、关闭按钮和系统菜单。
@@ -25,7 +25,7 @@ class FormWindow(wx.Frame):
         wx.FRAME_EX_CONTEXTHELP  : 是否有联机帮助按钮。
         wx.FRAME_FLOAT_ON_PARENT : 窗口是否显示在最上层，与 wx.STAY_ON_TOP 不同，它必须有一个父窗口。
         '''
-        super(FormWindow, self).__init__(parent = parent,
+        super(GridWindow, self).__init__(parent = parent,
                                          title = title,
                                          size = (350, 250),
                                          style = wx.MINIMIZE_BOX | wx.CAPTION | wx.CLOSE_BOX,
@@ -181,5 +181,5 @@ class FormWindow(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App()
-    FormWindow(None, title = 'form')
+    GridWindow(None, title = 'form')
     app.MainLoop()

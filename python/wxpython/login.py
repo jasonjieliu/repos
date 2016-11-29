@@ -15,15 +15,24 @@ class LoginWindow(wx.Frame):
                                     name = os.path.basename(sys.argv[0]).split('.')[0])
 
         self.window_init()
+        self.font_init()
         self.event_init()
         self.Centre()
         self.Show()
 
+        for list in self.GetChildren()[0].GetChildren():
+            print list
+
+        print type(self.GetChildren())
+
+        #print self.GetChildren()[0].GetChildren()
+
+        #wx._windows.Panel
+
+        #self.GetChildren().GetGetClassName()
+
     def window_init(self):
         self.panel = wx.Panel(self)
-
-        self.font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
-        self.font.SetPointSize(20)
 
         '''
         wx.VERTICAL  : 垂直方向
@@ -44,7 +53,6 @@ class LoginWindow(wx.Frame):
         self.label_user = wx.StaticText(self.panel,
                                         label = unicode('用户名:', 'utf-8'),
                                         style = wx.ALIGN_LEFT)
-        self.label_user.SetFont(self.font)
         '''
         wx.TE_CENTER       : 文本在控件中心
         wx.TE_LEFT         : 文件在控件左对齐, 默认方式
@@ -55,7 +63,7 @@ class LoginWindow(wx.Frame):
         wx.TE_PROCESS_TAB  : TAB当作字符输入文本, 否则进行控件间的切换
         wx.TE_READONLY     : 文本只读
         '''
-        self.text_user = wx.TextCtrl(self.panel, style = wx.TE_NOHIDESEL)
+        self.text_user = wx.TextCtrl(self.panel, style = wx.TE_NOHIDESEL | wx.TE_PROCESS_ENTER)
 
         '''
         flag        : 设置和周围的间隔方式。
@@ -67,8 +75,7 @@ class LoginWindow(wx.Frame):
 
         self.label_passwd = wx.StaticText(self.panel, label = unicode('密    码:', 'utf-8'))
 
-        self.label_passwd.SetFont(self.font)
-        self.text_passwd = wx.TextCtrl(self.panel, style = wx.TE_PASSWORD)
+        self.text_passwd = wx.TextCtrl(self.panel, style = wx.TE_PASSWORD | wx.TE_PROCESS_ENTER)
 
         box2.Add(self.label_passwd, flag = wx.LEFT, border = 10)
         box2.Add(self.text_passwd, flag = wx.RIGHT, border = 10, proportion = 1)
@@ -85,10 +92,8 @@ class LoginWindow(wx.Frame):
         self.normal = wx.RadioButton(self.panel,
                                     label = unicode('正常登录', 'utf-8'),
                                     style = wx.RB_GROUP)
-        self.normal.SetFont(self.font)
         self.anonymity = wx.RadioButton(self.panel,
                                     label = unicode('匿名登录', 'utf-8'))
-        self.anonymity.SetFont(self.font)
 
         box4.Add(self.normal, flag = wx.LEFT | wx.RIGHT, border = 25)
         box4.Add(self.anonymity, flag = wx.LEFT | wx.RIGHT, border = 25)
@@ -104,6 +109,15 @@ class LoginWindow(wx.Frame):
         self.vbox.Add((-1, 10))
 
         self.panel.SetSizer(self.vbox)
+
+    def font_init(self):
+        self.font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
+        self.font.SetPointSize(10)
+
+        self.label_user.SetFont(self.font)
+        self.label_passwd.SetFont(self.font)
+        self.normal.SetFont(self.font)
+        self.anonymity.SetFont(self.font)
 
     def event_init(self):
         '''
@@ -127,6 +141,8 @@ class LoginWindow(wx.Frame):
         self.bt_exit.Bind(wx.EVT_BUTTON, self.exit_event)
         self.normal.Bind(wx.EVT_RADIOBUTTON, self.choice_event)
         self.anonymity.Bind(wx.EVT_RADIOBUTTON, self.choice_event)
+        self.Bind(wx.EVT_TEXT_ENTER, self.login_event, self.text_user)
+        self.Bind(wx.EVT_TEXT_ENTER, self.login_event, self.text_passwd)
 
     def repaint_event(self, event):
         self.Refresh()
@@ -155,6 +171,9 @@ class LoginWindow(wx.Frame):
 
     def exit_event(self, event):
         self.Destroy()
+
+    def keyboard_down_event(self, event):
+        print event.GetKeyCode()
 
 if __name__ == '__main__':
     app = wx.App()
