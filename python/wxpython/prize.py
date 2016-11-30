@@ -12,27 +12,29 @@ class PrizeWindow(wx.Frame):
     def __init__(self, parent, title):
         super(PrizeWindow, self).__init__(parent = parent,
                                          title = title,
-                                         size = (500, 450),
-                                         #style = wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX,
+                                         size = (600, 450),
                                          name = os.path.basename(sys.argv[0]).split('.')[0])
+
+        self.title = title
+        self.total_people = {}
+        self.cur_people = {}
+        self.prize_people = {}
+        self.last_prize_people = {}
+        self.image = None
+        self.file_name = None
+        self.sava_flag = True
+        self.repeat_prize_flag = True
 
         self.window_init()
         self.event_init()
 
-        self.title = title
         self.SetBackgroundColour('#ADEAEA')
 
         self.Centre()
         self.Show()
 
     def window_init(self):
-        self.people = {}
-        self.orig_people = {}
-        self.prize_people = {}
-        self.image = None
-        self.file_name = None
-        self.sava_flag = True
-        self.draw_repeat_flag = True
+
         self.prize_num = [str(x+1) for x in range(15)]
         self.prize_level = [unicode('特等奖', 'utf-8'),
                             unicode('一等奖', 'utf-8'),
@@ -49,11 +51,11 @@ class PrizeWindow(wx.Frame):
         self.menu = [
             (unicode('&文件', 'utf-8'), (  # 一级菜单项
                 (unicode('&打开\tAlt+O', 'utf-8'),
-                 unicode('打开抽奖人员名单', 'utf-8'),
+                 unicode('加载参与抽奖人员名单', 'utf-8'),
                  wx.ITEM_NORMAL,
                  self.open_event),  # 二级菜单项
                 (unicode('&保存\tCtrl+S', 'utf-8'),
-                 unicode('保存中奖名单', 'utf-8'),
+                 unicode('保存中奖人员名单', 'utf-8'),
                  wx.ITEM_NORMAL,
                  self.save_as_event),
                 ("", "", ""),  # 分割线
@@ -151,6 +153,11 @@ class PrizeWindow(wx.Frame):
 
         self.bt_start = wx.Button(self, wx.NewId(), label = unicode('开始', 'utf-8'))
         self.bt_stop = wx.Button(self, wx.NewId(), label = unicode('停止', 'utf-8'))
+        self.bt_cancel = wx.Button(self, wx.NewId(), label = unicode('撤销', 'utf-8'))
+
+        self.bt_start.SetToolTipString(unicode('当前奖等开始抽奖', 'utf-8'))
+        self.bt_start.SetToolTipString(unicode('当前奖等抽奖完成', 'utf-8'))
+        self.bt_cancel.SetToolTipString(unicode('撤销上次抽奖信息', 'utf-8'))
 
         self.button_vbox.Add(box1,
                              flag = wx.LEFT | wx.EXPAND | wx.ALIGN_CENTER,
@@ -166,6 +173,10 @@ class PrizeWindow(wx.Frame):
                              proportion = 1,
                              border = 5)
         self.button_vbox.Add(self.bt_stop,
+                             flag = wx.LEFT | wx.SHAPED | wx.ALIGN_CENTER,
+                             proportion = 1,
+                             border = 5)
+        self.button_vbox.Add(self.bt_cancel,
                              flag = wx.LEFT | wx.RIGHT | wx.SHAPED | wx.ALIGN_CENTER,
                              proportion = 1,
                              border = 5)
@@ -178,20 +189,20 @@ class PrizeWindow(wx.Frame):
         self.grid.SetLabelBackgroundColour('White')
         self.grid.SetCellHighlightColour('Blue')
         self.grid.SetGridLineColour('Red')
-        self.grid.SetRowLabelSize(50)
+        self.grid.SetRowLabelSize(40)
         self.grid.SetColSize(0, 100)
 
         self.grid.SetColLabelValue(0, unicode('中奖人员', 'utf-8'))
         self.grid_clean()
 
-        self.panel = wx.Panel(self, -1)
+        self.panel = wx.Panel(self, wx.NewId(), style = wx.FULL_REPAINT_ON_RESIZE)
 
         self.panel_vbox.Add(self.grid,
                             flag = wx.LEFT | wx.RIGHT | wx.TOP,
                             proportion = 0,
                             border = 10)
         self.panel_vbox.Add(self.panel,
-                            flag = wx.LEFT | wx.RIGHT | wx.TOP | wx.SHAPED | wx.ALIGN_CENTER,
+                            flag = wx.LEFT | wx.RIGHT | wx.TOP | wx.EXPAND,
                             proportion = 1,
                             border = 10)
 
@@ -209,13 +220,14 @@ class PrizeWindow(wx.Frame):
         self.status_bar.SetStatusWidths([-3, -2, -2])
 
         self.status_bar.SetStatusText(unicode('鼠标位置: 0,0', 'utf-8'), 1)
-        self.status_bar.SetStatusText(unicode('窗口位置: 0', 'utf-8'), 2)
+        self.status_bar.SetStatusText(unicode('窗口位置: 0,0', 'utf-8'), 2)
 
     def event_init(self):
         self.Bind(wx.EVT_CHOICE, self.choice_level_event, self.ch_level)
         self.Bind(wx.EVT_CHOICE, self.choice_num_event, self.ch_num)
         self.bt_start.Bind(wx.EVT_BUTTON, self.start_event)
         self.bt_stop.Bind(wx.EVT_BUTTON, self.stop_event)
+        self.bt_cancel.Bind(wx.EVT_BUTTON, self.cancel_event)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.grid_event)
         self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.grid_event)
         self.Bind(wx.EVT_SIZE, self.window_size_event)
@@ -234,6 +246,7 @@ class PrizeWindow(wx.Frame):
             child.Bind(wx.EVT_MOVE, self.move_event)
             child.Bind(wx.EVT_MOTION, self.move_event)
         self.Bind(wx.EVT_MOVE, self.move_event)
+        self.Bind(wx.EVT_MOTION, self.move_event)
 
     def open_event(self, event):
         file_wildcard = "employee file(*.txt)|*.txt|All files(*.*)|*.*"
@@ -282,9 +295,9 @@ class PrizeWindow(wx.Frame):
 
     def draw_rule_event(self, event):
         if self.FindItemInMenuBar(event.GetId()).IsChecked():
-            self.draw_repeat_flag = True
+            self.repeat_prize_flag = True
         else:
-            self.draw_repeat_flag = False
+            self.repeat_prize_flag = False
 
     def status_show_hide_event(self, event):
         if self.FindItemInMenuBar(event.GetId()).IsChecked():
@@ -333,7 +346,7 @@ class PrizeWindow(wx.Frame):
 
     def timer_event(self, event):
         for i in range(int(self.cur_prize_num)):
-            id = random.choice(self.people.keys())
+            id = random.choice(self.cur_people.keys())
             self.grid.SetCellValue(i, 0, id)
             if i == 0:
                 self.image_show(id)
@@ -344,14 +357,23 @@ class PrizeWindow(wx.Frame):
 
         self.timer.Stop()
 
-        self.prize_people[self.cur_prize_level] = []
+        self.last_prize_people = {}
+        self.last_prize_people[self.cur_prize_level] = []
+        self.last_prize_people['repeat_prize_flag'] = self.repeat_prize_flag
+
+        if not self.prize_people.has_key(self.cur_prize_level):
+            self.prize_people[self.cur_prize_level] = []
 
         for i in range(int(self.cur_prize_num)):
-            job_num = random.choice(self.people.keys())
-            if not self.draw_repeat_flag:
-                self.people.pop(job_num)
-            self.grid.SetCellValue(i, 0, job_num)
-            self.prize_people[self.cur_prize_level].append(job_num)
+            people = random.choice(self.cur_people.keys())
+            self.grid.SetCellValue(i, 0, people)
+            self.cur_people.pop(people)
+            self.prize_people[self.cur_prize_level].append(people)
+            self.last_prize_people[self.cur_prize_level].append(people)
+
+        if self.repeat_prize_flag:
+            for people in self.prize_people[self.cur_prize_level]:
+                self.cur_people[people] = self.total_people[people]
 
         self.sava_flag = False
 
@@ -360,11 +382,19 @@ class PrizeWindow(wx.Frame):
             self.soft_warn(unicode('抽奖人员名单尚未装载', 'utf-8'))
             return False
 
-        if len(self.people) < int(self.cur_prize_num):
+        if len(self.cur_people) < int(self.cur_prize_num):
             self.soft_warn(unicode('当前参与抽奖人数小于奖项个数', 'utf-8'))
             return False
 
         return True
+
+    def cancel_event(self, event):
+        repeat_prize_flag = self.last_prize_people.pop('repeat_prize_flag')
+        if len(self.last_prize_people) > 0:
+            for people in self.last_prize_people.values()[0]:
+                if not repeat_prize_flag:
+                    self.cur_people[people] = self.total_people[people]
+                self.prize_people[self.last_prize_people.keys()[0]].remove(people)
 
     def soft_warn(self, message):
         dlg = wx.MessageDialog(self,
@@ -376,7 +406,7 @@ class PrizeWindow(wx.Frame):
         return
 
     def list_init(self, file_list):
-        self.people = {}
+        self.cur_people = {}
 
         with open(file_list, 'r') as fp:
             for line in fp.readlines():
@@ -385,12 +415,12 @@ class PrizeWindow(wx.Frame):
                 if len(list) != 2:
                     continue
 
-                self.people[list[0]] = list[1]
+                self.cur_people[list[0]] = list[1]
 
-        self.orig_people = self.people.copy()
+        self.total_people = self.cur_people.copy()
 
     def grid_event(self, event):
-        if not self.orig_people:
+        if not self.total_people:
             return
 
         if wx.grid.EVT_GRID_CELL_LEFT_CLICK.typeId == event.EventType:
@@ -401,23 +431,26 @@ class PrizeWindow(wx.Frame):
         event.Skip()
 
     def image_show(self, id):
-        if 0 == len(id) or not os.path.exists(os.path.join(self.file_path, self.orig_people[id])):
+        img_file = os.path.join(self.file_path, self.total_people[id])
+
+        if 0 == len(id) or not os.path.exists(img_file):
             return
 
         if self.image:
             #self.image.Hide()
             self.image.Destroy()
 
-        prefix, suffix = self.orig_people[id].split('.')
+        img = None
+        prefix, suffix = img_file.split('.')
         if suffix == 'jpg' or suffix == 'jpeg':
-            self.image = wx.StaticBitmap(self.panel, -1,
-                        wx.Image(self.orig_people[id], wx.BITMAP_TYPE_JPEG).ConvertToBitmap())
+            img = wx.Image(img_file, wx.BITMAP_TYPE_JPEG)
         elif suffix == 'png':
-            self.image = wx.StaticBitmap(self.panel, -1,
-                            wx.Image(self.orig_people[id], wx.BITMAP_TYPE_JPEG).ConvertToBitmap())
+            img = wx.Image(img_file, wx.BITMAP_TYPE_PNG)
         elif suffix == 'pnm':
-            self.image = wx.StaticBitmap(self.panel, -1,
-                            wx.Image(self.orig_people[id], wx.BITMAP_TYPE_JPEG).ConvertToBitmap())
+            img = wx.Image(img_file, wx.BITMAP_TYPE_PNM)
+
+        img.Rescale(self.panel.GetSize()[0], self.panel.GetSize()[1])
+        self.image = wx.StaticBitmap(self.panel, -1, img.ConvertToBitmap())
 
         self.image.SetToolTipString(prefix)
         self.Refresh()
