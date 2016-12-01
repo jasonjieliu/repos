@@ -23,7 +23,8 @@ class PrizeWindow(wx.Frame):
         self.image = None
         self.file_name = None
         self.sava_flag = True
-        self.repeat_prize_flag = True
+        self.repeat_prize_flag = False
+        self.image_fill_flag = True
 
         self.window_init()
         self.event_init()
@@ -67,13 +68,15 @@ class PrizeWindow(wx.Frame):
                 (unicode('&重复中奖', 'utf-8'),
                  unicode('是否可以重复中奖', 'utf-8'),
                  wx.ITEM_CHECK,
-                 self.draw_rule_event),
+                 self.draw_rule_event,
+                 False),
             )),
             (unicode('&视图', 'utf-8'), (
                 (unicode('&状态栏', 'utf-8'),
                  unicode('状态栏', 'utf-8'),
                  wx.ITEM_CHECK,
-                 self.status_show_hide_event),
+                 self.status_show_hide_event,
+                 True),
             )),
             (unicode('&帮助', 'utf-8'), (
                 (unicode('&关于', 'utf-8'),
@@ -101,8 +104,8 @@ class PrizeWindow(wx.Frame):
                     self.Bind(wx.EVT_MENU, each_menu[3], menu)
 
                     if each_menu[2] == wx.ITEM_CHECK:
-                        menu.Check(True)
-                        # top_menu.Check(menu.GetId(), True)
+                        menu.Check(each_menu[4])
+                        # top_menu.Check(menu.GetId(), each_menu[4])
                 else:
                     top_menu.AppendSeparator()
 
@@ -248,6 +251,11 @@ class PrizeWindow(wx.Frame):
         self.Bind(wx.EVT_MOVE, self.move_event)
         self.Bind(wx.EVT_MOTION, self.move_event)
 
+    #     self.panel.Bind(wx.EVT_LEFT_DOWN, self.test)
+    #
+    # def test(self, event):
+    #     print 'left down on', wx.FindWindowById(event.GetId()).GetLabel()
+
     def open_event(self, event):
         file_wildcard = "employee file(*.txt)|*.txt|All files(*.*)|*.*"
         dlg = wx.FileDialog(self,
@@ -389,12 +397,27 @@ class PrizeWindow(wx.Frame):
         return True
 
     def cancel_event(self, event):
+        if len(self.last_prize_people) == 0:
+            return
+
+        dlg = wx.MessageDialog(self,
+                               unicode('确认撤销上轮抽奖数据?', 'utf-8'),
+                               unicode('提示', 'utf-8'),
+                               wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+
+        if dlg.ShowModal() != wx.ID_YES:
+            event.Veto()
+
+        dlg.Destroy()
+
         repeat_prize_flag = self.last_prize_people.pop('repeat_prize_flag')
         if len(self.last_prize_people) > 0:
             for people in self.last_prize_people.values()[0]:
                 if not repeat_prize_flag:
                     self.cur_people[people] = self.total_people[people]
                 self.prize_people[self.last_prize_people.keys()[0]].remove(people)
+
+        self.last_prize_people = {}
 
     def soft_warn(self, message):
         dlg = wx.MessageDialog(self,
@@ -403,6 +426,7 @@ class PrizeWindow(wx.Frame):
                                wx.OK | wx.YES_DEFAULT | wx.ICON_QUESTION)
 
         dlg.ShowModal()
+        dlg.Destroy()
         return
 
     def list_init(self, file_list):
@@ -418,6 +442,8 @@ class PrizeWindow(wx.Frame):
                 self.cur_people[list[0]] = list[1]
 
         self.total_people = self.cur_people.copy()
+
+        self.soft_warn(unicode('参与抽奖人员装载完成, 人员总数:%d', 'utf-8') % len(self.total_people))
 
     def grid_event(self, event):
         if not self.total_people:
@@ -449,10 +475,12 @@ class PrizeWindow(wx.Frame):
         elif suffix == 'pnm':
             img = wx.Image(img_file, wx.BITMAP_TYPE_PNM)
 
-        img.Rescale(self.panel.GetSize()[0], self.panel.GetSize()[1])
+        if self.image_fill_flag:
+            img.Rescale(self.panel.GetSize()[0], self.panel.GetSize()[1])
         self.image = wx.StaticBitmap(self.panel, -1, img.ConvertToBitmap())
 
         self.image.SetToolTipString(prefix)
+        self.image.Center()
         self.Refresh()
 
     def move_event(self, event):
@@ -489,8 +517,10 @@ class PrizeWindow(wx.Frame):
                                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
 
         if dlg.ShowModal() == wx.ID_YES:
+            dlg.Destroy()
             self.Destroy()
         else:
+            dlg.Destroy()
             event.Veto()
 
 if __name__ == '__main__':
