@@ -48,12 +48,17 @@ pyinstaller生成exe：
 3、cmd在python源码目录下执行pyinstaller.py login.py（login.py是程序main入口）
 	pyinstaller.py参数说明：pyinstaller.py -Fw login.py
 	-F, --onefile Py代码只有一个文件
-	-D, --onedir Py代码放在一个目录中（默认是这个）
+	-D, --onedir Py代码放在一个目录中（默认选项）
 	-K, --tk 包含TCL/TK
+	-a, --ascii 不包含编码，在支持unicode的python上默认包含所有编码
 	-d, --debug 生成debug模式的exe文件
-	-w, --windowed, --noconsole 窗体exe文件(Windows Only)
-	-c, --nowindowed, --console 控制台exe文件(Windows Only)
+	-w, --windowed, --noconsole 启动时无控制台(Windows Only)
+	-c, --nowindowed, --console 启动时有控制台(Windows Only)
 	-X, --upx 使用upx压缩exe文件
 	-o DIR, --out=DIR 设置spec文件输出的目录，默认在PyInstaller同目录
 	-i, --icon=<FILE.ICO> 加入图标（Windows Only）
 	-v FILE, --version=FILE 加入版本信息文件
+	
+4、下载安装upx：https://github-cloud.s3.amazonaws.com/releases/67031040/494c5ea2-765b-11e6-8146-2a475a3f349e.zip?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAISTNZFOVBIJMK3TQ%2F20161202%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20161202T105620Z&X-Amz-Expires=300&X-Amz-Signature=10e5bb2366fa26ad33871a85f4f713701da4a438e08d12de4f9451726eb9a6e1&X-Amz-SignedHeaders=host&actor_id=16793561&response-content-disposition=attachment%3B%20filename%3Dupx391w.zip&response-content-type=application%2Foctet-stream
+	解压upx391w.zip
+	将upx.exe拷贝到python安装目录即可（和python.exe同级目录）（Pyinstaller.py中也不需要加-x选项）
