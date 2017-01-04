@@ -14,8 +14,13 @@ import datetime
 import calendar
 import collections
 
-
 class WorkerDay(object):
+    '''
+    year 年份
+    tx_seq 开始清算日序号
+    legal_holiday_range 法定假日区间
+    legal_workday_list 法定假日补休明细
+    '''
     def __init__(self, year, tx_seq, legal_holiday_range = {}, legal_workday_list = []):
         self.year = year
         self.tx_seq = tx_seq
@@ -26,6 +31,7 @@ class WorkerDay(object):
         self.legal_holiday_list = []
         self.legal_workday_list = legal_workday_list
         self.record_list = collections.OrderedDict()
+        self.sql_insert_list = []
 
         self.info_print()
 
@@ -34,6 +40,8 @@ class WorkerDay(object):
         self.legal_holiday_gen()
 
         self.work_day_gen()
+
+        print len(self.work_day_list), self.work_day_list
 
         self.total_day_list.sort()
         self.work_day_list.sort()
@@ -50,6 +58,8 @@ class WorkerDay(object):
         self.record_gen()
 
         self.sql_insert_gen()
+
+        print '\n'.join(map(lambda x: '%s' % x[1], enumerate(self.sql_insert_list)))
 
     def info_print(self):
         if calendar.isleap(int(self.year)):
@@ -110,18 +120,17 @@ class WorkerDay(object):
 
         for (stlm_date, value) in self.record_list.items():
             for tx_day in value['trans_date']:
-                if tx_day[-2:] == '01':
-                    profit_date = stlm_date
-
-                if tx_day == profit_date:
+                # if tx_day[-2:] == '01':
+                #     profit_date = stlm_date
+                #
+                # if tx_day == profit_date:
+                if tx_day[-2:] == '02':
                     batch_flag = 1
                 elif tx_day in self.record_list.keys():
                     batch_flag = 2
                 else:
                     batch_flag = 3
-                print '''insert tbl_stlm_date(trans_date, stlm_date, stlm_flag, batch_flag, resv1)
-                    values('%s', '%s', 0, %d, %d);''' % (tx_day, stlm_date, batch_flag, value['resv1'])
-
+                self.sql_insert_list.append('''insert into tbl_stlm_date(trans_date, stlm_date, stlm_flag, batch_flag, resv1) values('%s', '%s', 0, %d, %d);''' % (tx_day, stlm_date, batch_flag, value['resv1']))
 
 if __name__ == '__main__':
     WorkerDay('2017',

@@ -25,12 +25,6 @@ class LoginWindow(wx.Frame):
 
         print type(self.GetChildren())
 
-        #print self.GetChildren()[0].GetChildren()
-
-        #wx._windows.Panel
-
-        #self.GetChildren().GetGetClassName()
-
     def window_init(self):
         self.panel = wx.Panel(self)
 
